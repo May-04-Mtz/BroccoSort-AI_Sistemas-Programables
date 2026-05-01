@@ -1,3 +1,9 @@
+"""
+OBJETIVO: (Ej: Control de sensores y comunicación MQTT)
+INTEGRANTES: (Mayra Paola Martinez Aranda - Código, Nissi Sarahi Prats Ramirez - Código, Erik Fabian Gonsalez Jimenez - Código)
+PROYECTO: BroccoSort AI
+"""
+
 # Análisis Individual de Integrantes - BroccoSort AI
 
 Este documento detalla los retos técnicos y las soluciones aplicadas por cada miembro del equipo durante la integración MQTT.
