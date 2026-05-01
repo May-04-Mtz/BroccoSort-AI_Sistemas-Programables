@@ -1,3 +1,9 @@
+"""
+OBJETIVO: (Ej: Control de sensores y comunicación MQTT)
+INTEGRANTES: (Mayra Paola Martinez Aranda - Código, Nissi Sarahi Prats Ramirez - Código, Erik Fabian Gonsalez Jimenez - Código)
+PROYECTO: BroccoSort AI
+"""
+
 # Matriz de Tópicos MQTT - BroccoSort AI
 
 Este documento detalla la jerarquía de comunicación entre la ESP32 y el servidor Python.
