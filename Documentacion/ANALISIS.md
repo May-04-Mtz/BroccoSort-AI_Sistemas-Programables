@@ -1,7 +1,7 @@
 """
 OBJETIVO: (Ej: Control de sensores y comunicación MQTT)
 INTEGRANTES: (Mayra Paola Martinez Aranda - Código, Nissi Sarahi Prats Ramirez - Código, Erik Fabian Gonsalez Jimenez - Código)
-PROYECTO: BroccoSort AI
+PROYECTO: BroccoSort AI: Sistema Automatizado de Clasificación de Hortalizas por Visión y Morfología
 """
 
 # Análisis Individual de Integrantes - BroccoSort AI
