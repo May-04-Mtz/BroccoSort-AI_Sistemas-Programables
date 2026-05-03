@@ -4,7 +4,9 @@ Implementar un sistema automatizado de clasificación de hortalizas que utiliza 
 
 INTEGRANTES:
 Mayra Paola Martínez Aranda (Código)
+
 Nissi Sarahi Prats Ramírez (Código)
+
 Erik Fabian Gonsalez Jimenez (Código)
 
 PROYECTO:
