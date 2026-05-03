@@ -4,11 +4,11 @@ Implementar un sistema automatizado de clasificación de hortalizas que utiliza 
 
 INTEGRANTES:
 
-Mayra Paola Martínez Aranda (Código)
+Mayra Paola Martínez Aranda(22240233) 
 
-Nissi Sarahi Prats Ramírez (Código)
+Nissi Sarahi Prats Ramírez(23240003) 
 
-Erik Fabian Gonsalez Jimenez (Código)
+Erik Fabian Gonsalez Jimenez(23240022) 
 
 PROYECTO:
 "BroccoSort AI: Sistema Automatizado de Clasificación de Hortalizas por Visión y Morfología"
