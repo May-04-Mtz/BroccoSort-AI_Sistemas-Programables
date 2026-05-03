@@ -14,10 +14,42 @@ PROYECTO:
 "BroccoSort AI: Sistema Automatizado de Clasificación de Hortalizas por Visión y Morfología"
 """
 
-# Configuración de Red (Sustituir con datos reales para pruebas locales)
-WIFI_SSID = "TU_RED_WIFI"
-WIFI_PASSWORD = "TU_CONTRASEÑA"
+"""
+OBJETIVO: Gestionar la conexión MQTT y los callbacks para el control de actuadores.
+INTEGRANTES: Mayra Martínez, Nissi Prats, Erik González.
+PROYECTO: BroccoSort AI
+"""
+from umqtt.simple import MQTTClient
+from dispositivos import ActuatorBox
+import ujson
 
-# Configuración MQTT
-MQTT_BROKER = "192.168.x.x" # IP de la PC con el servidor Python
-TOPICO_DISTANCIA = "broccosort/telemetria/distancia"
+class MQTTHandler:
+    def __init__(self, broker, client_id, actuadores: ActuatorBox):
+        self.client = MQTTClient(client_id, broker)
+        self.actuadores = actuadores
+        self.client.set_callback(self.sub_cb)
+
+    def conectar(self):
+        self.client.connect()
+        self.client.subscribe(b"broccosort/comando/#")
+        print("Conectado al Broker y suscrito a comandos.")
+
+    def sub_cb(self, topic, msg):
+        """Callback para procesar comandos externos"""
+        print(f"Comando recibido: {topic} -> {msg}")
+        
+        if topic == b"broccosort/comando/brazo":
+            angulo = int(msg)
+            self.actuadores.mover_brazo_clasificador(angulo)
+        
+        elif topic == b"broccosort/comando/banda":
+            estado = int(msg) == 1
+            self.actuadores.control_banda(estado)
+            
+        elif topic == b"broccosort/comando/alerta":
+            self.actuadores.activar_alerta_error()
+
+    def publicar_telemetria(self, datos):
+        for clave, valor in datos.items():
+            topic = f"broccosort/telemetria/{clave}"
+            self.client.publish(topic, str(valor))
