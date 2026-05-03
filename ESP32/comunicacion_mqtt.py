@@ -1,24 +1,21 @@
 """
 OBJETIVO:
-Implementar un sistema automatizado de clasificación de hortalizas que utiliza visión artificial y sensores físicos para categorizar brócoli según su estado de madurez (color) y dimensiones (tamaño). El sistema busca optimizar la producción agrícola local mediante una banda transportadora controlada por un ESP32 S3 CAM, la cual desvía automáticamente el producto de baja calidad, emite alertas sonoras y visuales, y permite el monitoreo remoto de estadísticas de producción a través de una interfaz web y notificaciones en la nube.
+Implementar un sistema automatizado de clasificación de hortalizas que utiliza visión artificial 
+y sensores físicos para categorizar brócoli según su estado de madurez (color) y dimensiones (tamaño). 
+El sistema busca optimizar la producción agrícola local mediante una banda transportadora 
+controlada por un ESP32 S3 CAM, la cual desvía automáticamente el producto de baja calidad, 
+emite alertas sonoras y visuales, y permite el monitoreo remoto de estadísticas de producción 
+a través de una interfaz web y notificaciones en la nube.
 
 INTEGRANTES:
-
-Mayra Paola Martínez Aranda (Código)
-
-Nissi Sarahi Prats Ramírez (Código)
-
-Erik Fabian Gonsalez Jimenez (Código)
+- Mayra Paola Martínez Aranda
+- Nissi Sarahi Prats Ramírez
+- Erik Fabian Gonsalez Jimenez
 
 PROYECTO:
 "BroccoSort AI: Sistema Automatizado de Clasificación de Hortalizas por Visión y Morfología"
 """
 
-"""
-OBJETIVO: Gestionar la conexión MQTT y los callbacks para el control de actuadores.
-INTEGRANTES: Mayra Martínez, Nissi Prats, Erik González.
-PROYECTO: BroccoSort AI
-"""
 from umqtt.simple import MQTTClient
 from dispositivos import ActuatorBox
 import ujson
