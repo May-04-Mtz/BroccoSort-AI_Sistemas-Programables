@@ -13,3 +13,11 @@ Erik Fabian Gonsalez Jimenez (Código)
 PROYECTO:
 "BroccoSort AI: Sistema Automatizado de Clasificación de Hortalizas por Visión y Morfología"
 """
+
+# Configuración de Red (Sustituir con datos reales para pruebas locales)
+WIFI_SSID = "TU_RED_WIFI"
+WIFI_PASSWORD = "TU_CONTRASEÑA"
+
+# Configuración MQTT
+MQTT_BROKER = "192.168.x.x" # IP de la PC con el servidor Python
+TOPICO_DISTANCIA = "broccosort/telemetria/distancia"
