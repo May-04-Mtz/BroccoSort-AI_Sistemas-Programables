@@ -8,9 +8,9 @@ emite alertas sonoras y visuales, y permite el monitoreo remoto de estadísticas
 a través de una interfaz web y notificaciones en la nube.
 
 INTEGRANTES:
-- Mayra Paola Martínez Aranda
-- Nissi Sarahi Prats Ramírez
-- Erik Fabian Gonsalez Jimenez
+- Mayra Paola Martínez Aranda(22240233) 
+- Nissi Sarahi Prats Ramírez(23240003) 
+- Erik Fabian Gonsalez Jimenez(23240022)  
 
 PROYECTO:
 "BroccoSort AI: Sistema Automatizado de Clasificación de Hortalizas por Visión y Morfología"
