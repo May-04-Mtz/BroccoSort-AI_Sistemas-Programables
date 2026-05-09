@@ -1,12 +1,17 @@
 """
-OBJETIVO:
-Implementar la Capa de Abstracción de Hardware (HAL) para gestionar sensores (Ultrasónico, LDR, Infrarrojo)
-y actuadores (Servomotor, Motor DC, Zumbador) del sistema BroccoSort AI.
-INTEGRANTES:
-- Mayra Paola Martínez Aranda (22240233) 
-- Nissi Sarahi Prats Ramírez (23240003) 
-- Erik Fabian Gonsalez Jimenez (23240022)  
-PROYECTO:
+# OBJETIVO:
+Implementar un sistema automatizado de clasificación de hortalizas que utiliza visión artificial y sensores 
+físicos para categorizar brócoli según su estado de madurez (color) y dimensiones (tamaño). El sistema busca 
+optimizar la producción agrícola local mediante una banda transportadora controlada por un ESP32 S3 CAM, l
+a cual desvía automáticamente el producto de baja calidad, emite alertas sonoras y visuales, y permite el monitoreo
+remoto de estadísticas de producción a través de una interfaz web y notificaciones en la nube.
+
+# INTEGRANTES:
+- Mayra Paola Martínez Aranda(22240233) 
+- Nissi Sarahi Prats Ramírez(23240003) 
+- Erik Fabian Gonsalez Jimenez(23240022)  
+
+# PROYECTO:
 "BroccoSort AI: Sistema Automatizado de Clasificación de Hortalizas por Visión y Morfología"
 """
 
