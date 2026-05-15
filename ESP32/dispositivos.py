@@ -24,6 +24,7 @@ class SensorBox:
     """
     def __init__(self):
         # Sensor Ultrasónico (Medición de tamaño/altura)
+        # Trigger: Pin 5, Echo: Pin 18
         self.disparador = Pin(5, Pin.OUT)
         self.eco = Pin(18, Pin.IN)
         
@@ -34,43 +35,44 @@ class SensorBox:
         self.sensor_luz = ADC(Pin(34))
         self.sensor_luz.atten(ADC.ATTN_11DB) # Rango hasta 3.3V
 
-     def leer_distancia_cm(self):
-    """
-    Calcula la distancia promediando 5 lecturas para eliminar ruido.
-    """
-    lecturas = []
-    for _ in range(5):
-        self.disparador.value(0)
-        time.sleep_us(2)
-        self.disparador.value(1)
-        time.sleep_us(10)
-        self.disparador.value(0)
-        
-        while self.eco.value() == 0:
-            pass
-        inicio = time.ticks_us()
-        while self.eco.value() == 1:
-            pass
-        fin = time.ticks_us()
-        
-        duracion = time.ticks_diff(fin, inicio)
-        distancia = (duracion * 0.0343) / 2
-        lecturas.append(distancia)
-        time.sleep_ms(10) # Pequeña pausa entre ráfagas
-        
-    return sum(lecturas) / len(lecturas)
+    def leer_distancia_cm(self):
+        """
+        Calcula la distancia promediando 5 lecturas para eliminar ruido.
+        """
+        lecturas = []
+        for _ in range(5):
+            self.disparador.value(0)
+            time.sleep_us(2)
+            self.disparador.value(1)
+            time.sleep_us(10)
+            self.disparador.value(0)
+            
+            # Timeout para evitar bucles infinitos si el sensor falla
+            timeout = time.ticks_us() + 30000
+            while self.eco.value() == 0 and time.ticks_us() < timeout:
+                pass
+            inicio = time.ticks_us()
+            
+            while self.eco.value() == 1 and time.ticks_us() < timeout:
+                pass
+            fin = time.ticks_us()
+            
+            duracion = time.ticks_diff(fin, inicio)
+            distancia = (duracion * 0.0343) / 2
+            lecturas.append(distancia)
+            time.sleep_ms(10) 
+            
+        return sum(lecturas) / len(lecturas)
 
     def hay_objeto(self):
         """
-        Verifica si el sensor infrarrojo detecta un brócoli frente a él.
-        Devuelve: Booleano (True si hay objeto).
+        Verifica si el sensor infrarrojo detecta un brócoli.
         """
         return self.sensor_presencia.value() == 0
 
     def leer_nivel_luz(self):
         """
-        Lee la fotorresistencia 5 veces para estabilizar la lectura y 
-        devuelve un promedio del porcentaje de brillo (0-100%).
+        Promedia el porcentaje de brillo (0-100%).
         """
         suma = 0
         for _ in range(5):
@@ -80,9 +82,6 @@ class SensorBox:
         return (promedio / 4095) * 100
 
     def obtener_resumen_sensores(self):
-        """
-        Genera un diccionario con las lecturas actuales de todo el hardware.
-        """
         return {
             "distancia": self.leer_distancia_cm(),
             "presencia": self.hay_objeto(),
@@ -106,14 +105,15 @@ class ActuatorBox:
 
     def mover_brazo_clasificador(self, angulo):
         """
-        Mueve el servo a una posición específica (0, 90 o 180 grados).
+        Mueve el servo a una posición (0 a 180).
         """
+        # Fórmula para mapear grados a duty de MicroPython (aprox 26-123)
         ciclo = int(((angulo / 180) * 97) + 26)
         self.brazo.duty(ciclo)
 
     def control_banda(self, encendido):
         """
-        Enciende o apaga el motor de la banda transportadora.
+        Enciende o apaga el motor de la banda.
         """
         if encendido:
             self.motor_banda_a.value(1)
@@ -124,18 +124,18 @@ class ActuatorBox:
 
     def activar_alerta_error(self, duracion=0.5):
         """
-        Hace sonar el zumbador para indicar un brócoli echado a perder.
+        Hace sonar el zumbador.
         """
         self.zumbador.value(1)
         time.sleep(duracion)
         self.zumbador.value(0)
 
-def estado_seguro(self):
-    """
-    Detiene todo y libera el paso de la banda.
-    """
-    self.control_banda(False) [cite: 185]
-    self.zumbador.value(0) [cite: 186]
-    self.mover_brazo_clasificador(0) # Regresa a posición inicial
-    self.brazo.duty(0) # Desactiva el PWM para evitar vibraciones
-    print("SISTEMA EN ESTADO SEGURO") [cite: 188]
+    def estado_seguro(self):
+        """
+        Detiene todo el sistema inmediatamente.
+        """
+        self.control_banda(False)
+        self.zumbador.value(0)
+        self.mover_brazo_clasificador(0) 
+        self.brazo.duty(0) # Apaga PWM para evitar zumbido en el servo
+        print("🚨 SISTEMA EN ESTADO SEGURO")
