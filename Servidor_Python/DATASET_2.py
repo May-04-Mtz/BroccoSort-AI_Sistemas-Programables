@@ -23,8 +23,8 @@ BROKER_MQTT = "broker.hivemq.com"
 PUERTO_MQTT = 1883 
 
 # Ajuste estricto de tópicos para alineación con base de datos NoSQL
-TOPICO_PRESENCIA = "broccosort/banda01/presencia/sensor01"
-TOPICO_BRAZO = "broccosort/banda01/brazo/actuador02"  
+TOPICO_PRESENCIA = "broccosort/presencia/banda01/sensor01"
+TOPICO_BRAZO = "broccosort/brazo/banda01/actuador02"
 
 ESP32_CAM_URL = "http://192.168.8.27/foto" 
 IMAGEN_TEMPORAL = "captura_banda.jpg"
