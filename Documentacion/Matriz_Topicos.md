@@ -9,13 +9,13 @@ Implementar un sistema automatizado de clasificación de hortalizas que utiliza 
 # PROYECTO:
 "BroccoSort AI: Sistema Automatizado de Clasificación de Hortalizas por Visión y Morfología"
 
-# 🗺️ Matriz de Tópicos MQTT - Estándar Industrial (4 Niveles)
+# Matriz de Tópicos MQTT - Estándar Industrial (4 Niveles)
 
 Para cumplir estrictamente con el diseño de una arquitectura de tópicos predecible y estandarizada exigida en la retroalimentación, y garantizar una sincronización perfecta con la estructura NoSQL de **Firebase Realtime Database** sin corromper el árbol de datos, se ha implementado el formato rígido de 4 niveles en todo el ecosistema.
 
 > **Jerarquía Estándar Obligatoria:** `proyecto / tipo_nodo / nombre_modulo / id_dispositivo`
 
-## 📊 Tabla de Mapeo del Ecosistema IoT (100% Sensores y Actuadores)
+## Tabla de Mapeo del Ecosistema IoT (100% Sensores y Actuadores)
 
 | Nivel 1: Proyecto | Nivel 2: Tipo Nodo | Nivel 3: Módulo | Nivel 4: ID Disp. | Dirección de Datos | Formato | Descripción Técnica |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -28,7 +28,7 @@ Para cumplir estrictamente con el diseño de una arquitectura de tópicos predec
 
 ---
 
-## 🪵 Mapeo Estructurado en Firebase Realtime Database (NoSQL)
+## Mapeo Estructurado en Firebase Realtime Database (NoSQL)
 
 Al organizar los tópicos moviéndose de lo general a lo específico de izquierda a derecha separados por diagonales (`/`), las colecciones NoSQL en la nube se estructuran de forma nativa en un árbol JSON limpio. Esto previene rutas libres o ambiguas que causen lecturas vacías o cruzadas en el Dashboard:
 
