@@ -12,13 +12,13 @@ Implementar un sistema automatizado de clasificación de hortalizas que utiliza 
 # Matriz de Tópicos MQTT - BroccoSort AI
 Este documento detalla la jerarquía de comunicación entre la ESP32 y el servidor Python.
 
-# 🗺️ Matriz de Tópicos MQTT - Estándar Industrial (4 Niveles)
+# Matriz de Tópicos MQTT - Estándar Industrial (4 Niveles)
 
 Para cumplir estrictamente con la arquitectura de tópicos predecible y estandarizada exigida en el curso, y asegurar una perfecta integración con el árbol JSON NoSQL de **Firebase Realtime Database**, se reestructuraron todos los canales de comunicación bajo el formato rígido de 4 niveles:
 
 > **Formato:** `proyecto / tipo_nodo / nombre_modulo / id_dispositivo`
 
-## 📊 Tabla de Mapeo de Dispositivos (100% Sensores y Actuadores)
+## Tabla de Mapeo de Dispositivos (100% Sensores y Actuadores)
 
 | Nivel 1: Proyecto | Nivel 2: Tipo Nodo | Nivel 3: Módulo | Nivel 4: ID Dispositivo | Dirección de Datos | Formato del Payload | Descripción Funcional |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -31,7 +31,7 @@ Para cumplir estrictamente con la arquitectura de tópicos predecible y estandar
 
 ---
 
-## 🪵 Impacto en la Estructura NoSQL (Firebase Realtime Database)
+## Impacto en la Estructura NoSQL (Firebase Realtime Database)
 
 Gracias a este esquema jerárquico de izquierda a derecha (de lo general a lo específico), la base de datos NoSQL genera un árbol JSON limpio sin duplicación de registros ni lecturas vacías:
 
