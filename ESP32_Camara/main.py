@@ -1,7 +1,13 @@
-# NOMBRE DEL PROYECTO: BroccoSort AI
-# INTEGRANTES: Mayra Paola Martínez Aranda, Nissi Sarahi Prats Ramírez, Erik Fabian Gonsalez Jimenez
-# PROYECTO: "BroccoSort AI: Sistema Automatizado de Clasificación de Hortalizas por Visión y Morfología"
-# DESCRIPCIÓN: Servidor Web Optimizado en ESP32-CAM para captura remota de imágenes sincronizado con DATASET_2.py.
+"""
+NOMBRE DEL PROYECTO: BroccoSort AI: Sistema Automatizado de Clasificación
+de Hortalizas por Visión y Morfología
+OBJETIVO: Integración de IA para Captura remota y transmisión de imágenes
+de hortalizas hacia el servidor central de IA.
+INTEGRANTES: 
+- Mayra Paola Martínez Aranda (22240233)
+- Nissi Sarahi Prats Ramírez (23240003)
+- Erik Fabian Gonsalez Jimenez (23240022)
+"""
 
 import camera  # Para controlar la cámara
 import network # Para conectarse a Wi-Fi
