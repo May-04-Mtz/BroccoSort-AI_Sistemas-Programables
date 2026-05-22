@@ -1,34 +1,120 @@
-from roboflow import Roboflow
-import os
+# NOMBRE DEL PROYECTO: BroccoSort AI
+# INTEGRANTES: Mayra Paola Martinez Aranda, Nissi Sarahi Prats Ramirez, Erik Fabian Gonsalez Jimenez
+# DESCRIPCIÓN: Servidor central de IA con Persistencia Estructurada en Firebase.
 
-# 1. Configuración de tu modelo (Usando tus datos de la captura)
-# El Model ID es: broccoli-6n3ht-ininr y la versión es la 3
+import os
+import time
+import requests  
+import paho.mqtt.client as mqtt
+from roboflow import Roboflow
+from datetime import datetime
+
+# =====================================================================
+# 🔴 CONFIGURACIONES ESTRUCTURADAS (4 NIVELES) 🔴
+# =====================================================================
+BROKER_MQTT = "broker.hivemq.com"  
+PUERTO_MQTT = 1883 
+
+# Ajuste estricto de tópicos para alineación con base de datos NoSQL
+TOPICO_PRESENCIA = "broccosort/banda01/presencia/sensor01"
+TOPICO_BRAZO = "broccosort/banda01/brazo/actuador02"  
+
+ESP32_CAM_URL = "http://192.168.8.27/foto" 
+IMAGEN_TEMPORAL = "captura_banda.jpg"
+FIREBASE_URL = "https://broccosort-ai-default-rtdb.firebaseio.com/historial.json"
+
+client = mqtt.Client()
+objeto_en_espera = False  
+
+# --- Configuración de Roboflow ---
+print("⏳ Inicializando modelo de IA...")
 rf = Roboflow(api_key="T5jPuaVg9YZzFQq277bt")
 project = rf.workspace().project("broccoli-6n3ht-ininr")
 model = project.version(3).model
+print("✅ IA de Roboflow cargada exitosamente.")
 
-# 2. Función para clasificar una foto
-def clasificar_vegetal(ruta_imagen):
-    print(f"Analizando: {ruta_imagen}...")
-    
-    # Hacemos la predicción (Ajustamos confianza a 25% para empezar)
-    prediction = model.predict(ruta_imagen, confidence=25).json()
-    
-    if len(prediction['predictions']) > 0:
-        for det in prediction['predictions']:
-            clase = det['class']
-            confianza = det['confidence']
-            print(f"✅ RESULTADO: {clase} ({confianza*100:.1f}%)")
+def guardar_en_firebase(estado, confianza):
+    """Envía el registro de clasificación a Firebase Realtime Database"""
+    try:
+        historial_clasificacion = {
+            "fecha_hora": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "estado": estado,
+            "confianza": round(confianza * 100, 2)
+        }
+        respuesta = requests.post(FIREBASE_URL, json=historial_clasificacion, timeout=3)
+        if respuesta.status_code == 200:
+            print("☁️ Datos respaldados en Firebase correctamente sin comprometer el árbol JSON.")
+        else:
+            print(f"⚠️ Firebase rechazó los datos. Código: {respuesta.status_code}")
+    except Exception as e:
+        print(f"❌ Error al conectar con Firebase: {e}")
+
+def procesar_clasificacion(client):
+    try:
+        print("\n📸 Detectado. Solicitando captura a la ESP32-CAM...")
+        respuesta = requests.get(ESP32_CAM_URL, timeout=5)
+        
+        if respuesta.status_code == 200:
+            with open(IMAGEN_TEMPORAL, 'wb') as f:
+                f.write(respuesta.content)
             
-            # Aquí va tu lógica para activar motores
-            if clase == "podrido":
-                print("🚨 ACTIVANDO ACTUADOR: Brócoli no apto.")
-    else:
-        print("❓ No se detectó nada claro.")
+            prediction = model.predict(IMAGEN_TEMPORAL, confidence=25).json()
+            detecciones = prediction["predictions"]
 
-# 3. Prueba rápida
-# Asegúrate de tener una imagen llamada 'test.jpg' en la misma carpeta que este script
-if os.path.exists("test.jpg"):
-    clasificar_vegetal("test.jpg")
-else:
-    print("Sube una imagen llamada 'test.jpg' para probar.")
+            if len(detecciones) > 0:
+                clases_encontradas = [det["class"].lower().strip() for det in detecciones]
+                clase_principal = detecciones[0]["class"]
+                confianza_principal = detecciones[0]["confidence"]
+                
+                for det in detecciones:
+                    print(f"🎯 DETECTADO: {det['class']} ({det['confidence'] * 100:.1f}%)")
+
+                # Lógica de toma de decisiones mapeada a actuadores
+                if any("podrido" in c for c in clases_encontradas):
+                    print("🚨 RECHAZADO: Estado podrido. Moviendo brazo a 180°.")
+                    client.publish(TOPICO_BRAZO, "180")
+                    guardar_en_firebase("podrido", confianza_principal)
+                    time.sleep(2.5)  
+                    client.publish(TOPICO_BRAZO, "0")
+
+                elif any("floracion" in c for c in clases_encontradas) or any("floración" in c for c in clases_encontradas):
+                    print("⚠️ FLORACIÓN: Calidad media. Moviendo brazo a 90°.")
+                    client.publish(TOPICO_BRAZO, "90")
+                    guardar_en_firebase("floracion", confianza_principal)
+                    time.sleep(2.5)
+                    client.publish(TOPICO_BRAZO, "0")
+                else:
+                    print("🍏 APTO: Brócoli óptimo. Sigue curso a 0°.")
+                    client.publish(TOPICO_BRAZO, "0")
+                    guardar_en_firebase("apto", confianza_principal)
+            else:
+                print("❓ Clasificación ambigua. Pasa por defecto.")
+                client.publish(TOPICO_BRAZO, "0")
+                guardar_en_firebase("indeterminado", 0.0)
+        else:
+            print("❌ Error: La cámara no respondió.")
+    except Exception as e:
+        print(f"⚠️ Fallo en el bucle de la IA: {e}")
+
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("🌐 Servidor de IA conectado al Broker bajo estándar de 4 niveles")
+        client.subscribe(TOPICO_PRESENCIA)
+    else:
+        print(f"❌ Fallo de conexión. Código: {rc}")
+
+def on_message(client, userdata, msg):
+    global objeto_en_espera
+    valor = msg.payload.decode()
+    
+    if valor == "1" and not objeto_en_espera:
+        objeto_en_espera = True
+        procesar_clasificacion(client)
+    elif valor == "0":
+        objeto_en_espera = False  
+
+if __name__ == "__main__":
+    client.on_connect = on_connect
+    client.on_message = on_message
+    client.connect(BROKER_MQTT, PUERTO_MQTT, 60)
+    client.loop_forever()
