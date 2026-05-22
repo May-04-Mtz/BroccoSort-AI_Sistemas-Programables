@@ -9,53 +9,60 @@ Implementar un sistema automatizado de clasificación de hortalizas que utiliza 
 # PROYECTO:
 "BroccoSort AI: Sistema Automatizado de Clasificación de Hortalizas por Visión y Morfología"
 
-# Matriz de Tópicos MQTT - BroccoSort AI
-Este documento detalla la jerarquía de comunicación entre la ESP32 y el servidor Python.
-
 # Matriz de Tópicos MQTT - Estándar Industrial (4 Niveles)
 
-Para cumplir estrictamente con la arquitectura de tópicos predecible y estandarizada exigida en el curso, y asegurar una perfecta integración con el árbol JSON NoSQL de **Firebase Realtime Database**, se reestructuraron todos los canales de comunicación bajo el formato rígido de 4 niveles:
+Para cumplir estrictamente con el diseño de una arquitectura de tópicos predecible y estandarizada, y garantizar una sincronización perfecta con la estructura NoSQL de **Firebase Realtime Database** sin corromper el árbol de datos, se ha implementado el formato rígido de 4 niveles:
 
-> **Formato:** `proyecto / tipo_nodo / nombre_modulo / id_dispositivo`
+> **Jerarquía Estándar:** `proyecto / tipo_nodo / nombre_modulo / id_dispositivo`
 
-## Tabla de Mapeo de Dispositivos (100% Sensores y Actuadores)
+## Tabla de Mapeo del Ecosistema IoT (100% Sensores y Actuadores)
 
-| Nivel 1: Proyecto | Nivel 2: Tipo Nodo | Nivel 3: Módulo | Nivel 4: ID Dispositivo | Dirección de Datos | Formato del Payload | Descripción Funcional |
+| Nivel 1: Proyecto | Nivel 2: Tipo Nodo | Nivel 3: Módulo | Nivel 4: ID Disp. | Dirección | Formato | Descripción Técnica |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `broccosort` | `presencia` | `banda01` | `sensor01` | ESP32 $\rightarrow$ Python | `1` o `0` | Sensor óptico/IR que detecta la hortaliza en la banda. Actúa como el disparador (trigger) asíncrono para la captura de imagen de la IA. |
-| `broccosort` | `distancia` | `banda01` | `sensor02` | ESP32 $\rightarrow$ Python | `String (float)` | Telemetría en tiempo real del sensor ultrasónico en centímetros para el análisis morfológico. |
-| `broccosort` | `luz` | `banda01` | `sensor03` | ESP32 $\rightarrow$ Python | `String (float)` | Lectura del sensor LDR para monitorear el nivel de iluminación ambiental y calibrar la exposición de la cámara. |
-| `broccosort` | `banda` | `banda01` | `actuador01` | Python $\rightarrow$ ESP32 | `1` o `0` | Comando de control enviado desde el servidor de IA para arrancar (`1`) o parar (`0`) el motor de la banda transportadora. |
-| `broccosort` | `brazo` | `banda01` | `actuador02` | Python $\rightarrow$ ESP32 | `0` / `90` / `180` | Comando de posición angular dirigido al servomotor clasificador según la inferencia de la IA (`0°` = Apto, `90°` = Media/Floración, `180°` = Rechazado/Podrido). |
-| `broccosort` | `alerta` | `banda01` | `actuador03` | Python $\rightarrow$ ESP32 | `1` o `0` | Activación remota de salida digital (Zumbador/LED indicador) cuando el modelo de IA clasifica una hortaliza en estado de descomposición. |
+| `broccosort` | `presencia` | `banda01` | `sensor01` | ESP32 $\rightarrow$ Py | `1` o `0` | Trigger óptico para captura de la IA. |
+| `broccosort` | `distancia` | `banda01` | `sensor02` | ESP32 $\rightarrow$ Py | `String` | Telemetría ultrasónica (morfología). |
+| `broccosort` | `luz` | `banda01` | `sensor03` | ESP32 $\rightarrow$ Py | `String` | Nivel LDR para calibración lumínica. |
+| `broccosort` | `banda` | `banda01` | `actuador01` | Py $\rightarrow$ ESP32 | `1` o `0` | Arranque y paro del motor de la banda. |
+| `broccosort` | `brazo` | `banda01` | `actuador02` | Py $\rightarrow$ ESP32 | `0` / `90` / `180` | Posición del servo según clasificación IA. |
+| `broccosort` | `alerta` | `banda01` | `actuador03` | Py $\rightarrow$ ESP32 | `1` o `0` | Alerta por brócoli podrido (Zumbador). |
 
 ---
 
-## Impacto en la Estructura NoSQL (Firebase Realtime Database)
+## Mapeo Estructurado en Firebase Realtime Database (NoSQL)
 
-Gracias a este esquema jerárquico de izquierda a derecha (de lo general a lo específico), la base de datos NoSQL genera un árbol JSON limpio sin duplicación de registros ni lecturas vacías:
+Al organizar los tópicos moviéndose de lo general a lo específico de izquierda a derecha separados por diagonales (`/`), las colecciones NoSQL en la nube se estructuran de forma nativa en un árbol JSON limpio. Esto previene rutas libres o ambiguas que causen lecturas vacías o cruzadas en el Dashboard:
 
 ```json
 {
   "broccosort": {
-    "banda01": {
-      "presencia": {
+    "presencia": {
+      "banda01": {
         "sensor01": 1
-      },
-      "distancia": {
+      }
+    },
+    "distancia": {
+      "banda01": {
         "sensor02": "14.5"
-      },
-      "luz": {
-        "sensor03": "85.2"
-      },
-      "banda": {
+      }
+    },
+    "luz": {
+      "banda01": {
+        "sensor03": "78.2"
+      }
+    },
+    "banda": {
+      "banda01": {
         "actuador01": 1
-      },
-      "brazo": {
+      }
+    },
+    "brazo": {
+      "banda01": {
         "actuador02": 180
-      },
-      "alerta": {
-        "actuador03": 1
+      }
+    },
+    "alerta": {
+      "banda01": {
+        "actuador03": 0
       }
     }
   }
