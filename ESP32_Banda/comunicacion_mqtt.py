@@ -63,11 +63,11 @@ self.TOPICO_ALERTA = b"broccosort/alerta/banda01/actuador03"
         Ejemplo: 'presencia' -> 'broccosort/banda01/presencia/sensor01'
         """
         # Mapeo explícito para garantizar el id_alfanumerico en el cuarto nivel
-        mapeo_topicos = {
-            "presencia": "broccosort/banda01/presencia/sensor01",
-            "distancia": "broccosort/banda01/distancia/sensor02",
-            "luz": "broccosort/banda01/luz/sensor03"
-        }
+mapeo_topicos = {
+    "presencia": "broccosort/presencia/banda01/sensor01",
+    "distancia": "broccosort/distancia/banda01/sensor02",
+    "luz": "broccosort/luz/banda01/sensor03"
+}
         
         for clave, valor in datos.items():
             if clave in mapeo_topicos:
