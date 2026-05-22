@@ -18,10 +18,10 @@ class MQTTHandler:
         self.actuadores = actuadores
         self.client.set_callback(self.sub_cb)
         
-        # Definición estricta de tópicos de control (Jerarquía de 4 niveles)
-        self.TOPICO_BANDA = b"broccosort/banda01/banda/actuador01"
-        self.TOPICO_BRAZO = b"broccosort/banda01/brazo/actuador02"
-        self.TOPICO_ALERTA = b"broccosort/banda01/alerta/actuador03"
+# Definición estricta de tópicos de control (Jerarquía de 4 niveles NoSQL)
+self.TOPICO_BANDA = b"broccosort/banda/banda01/actuador01"
+self.TOPICO_BRAZO = b"broccosort/brazo/banda01/actuador02"
+self.TOPICO_ALERTA = b"broccosort/alerta/banda01/actuador03"
 
     def conectar(self):
         """Establece conexión y se suscribe individualmente a los tópicos estructurados."""
