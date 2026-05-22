@@ -12,11 +12,51 @@ Implementar un sistema automatizado de clasificación de hortalizas que utiliza 
 # Matriz de Tópicos MQTT - BroccoSort AI
 Este documento detalla la jerarquía de comunicación entre la ESP32 y el servidor Python.
 
-| Dispositivo | Tópico | Dirección | Descripción |
-| :--- | :--- | :--- | :--- |
-| **Ultrasonico** | `broccosort/telemetria/distancia` | ESP32 -> PC | Envía altura del brócoli en cm |
-| **Infrarrojo** | `broccosort/telemetria/presencia` | ESP32 -> PC | Detecta si hay producto (0/1) |
-| **LDR** | `broccosort/telemetria/luz` | ESP32 -> PC | Nivel de iluminación para la cámara |
-| **Servomotor** | `broccosort/comando/brazo` | PC -> ESP32 | Ángulo de clasificación (0, 90, 180) |
-| **Motor Banda** | `broccosort/comando/banda` | PC -> ESP32 | Control de movimiento (0/1) |
-| **Buzzer** | `broccosort/comando/alerta` | PC -> ESP32 | Activa sonido en caso de error |
+# 🗺️ Matriz de Tópicos MQTT - Estándar Industrial (4 Niveles)
+
+Para cumplir estrictamente con la arquitectura de tópicos predecible y estandarizada exigida en el curso, y asegurar una perfecta integración con el árbol JSON NoSQL de **Firebase Realtime Database**, se reestructuraron todos los canales de comunicación bajo el formato rígido de 4 niveles:
+
+> **Formato:** `proyecto / tipo_nodo / nombre_modulo / id_dispositivo`
+
+## 📊 Tabla de Mapeo de Dispositivos (100% Sensores y Actuadores)
+
+| Nivel 1: Proyecto | Nivel 2: Tipo Nodo | Nivel 3: Módulo | Nivel 4: ID Dispositivo | Dirección de Datos | Formato del Payload | Descripción Funcional |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `broccosort` | `presencia` | `banda01` | `sensor01` | ESP32 $\rightarrow$ Python | `1` o `0` | Sensor óptico/IR que detecta la hortaliza en la banda. Actúa como el disparador (trigger) asíncrono para la captura de imagen de la IA. |
+| `broccosort` | `distancia` | `banda01` | `sensor02` | ESP32 $\rightarrow$ Python | `String (float)` | Telemetría en tiempo real del sensor ultrasónico en centímetros para el análisis morfológico. |
+| `broccosort` | `luz` | `banda01` | `sensor03` | ESP32 $\rightarrow$ Python | `String (float)` | Lectura del sensor LDR para monitorear el nivel de iluminación ambiental y calibrar la exposición de la cámara. |
+| `broccosort` | `banda` | `banda01` | `actuador01` | Python $\rightarrow$ ESP32 | `1` o `0` | Comando de control enviado desde el servidor de IA para arrancar (`1`) o parar (`0`) el motor de la banda transportadora. |
+| `broccosort` | `brazo` | `banda01` | `actuador02` | Python $\rightarrow$ ESP32 | `0` / `90` / `180` | Comando de posición angular dirigido al servomotor clasificador según la inferencia de la IA (`0°` = Apto, `90°` = Media/Floración, `180°` = Rechazado/Podrido). |
+| `broccosort` | `alerta` | `banda01` | `actuador03` | Python $\rightarrow$ ESP32 | `1` o `0` | Activación remota de salida digital (Zumbador/LED indicador) cuando el modelo de IA clasifica una hortaliza en estado de descomposición. |
+
+---
+
+## 🪵 Impacto en la Estructura NoSQL (Firebase Realtime Database)
+
+Gracias a este esquema jerárquico de izquierda a derecha (de lo general a lo específico), la base de datos NoSQL genera un árbol JSON limpio sin duplicación de registros ni lecturas vacías:
+
+```json
+{
+  "broccosort": {
+    "banda01": {
+      "presencia": {
+        "sensor01": 1
+      },
+      "distancia": {
+        "sensor02": "14.5"
+      },
+      "luz": {
+        "sensor03": "85.2"
+      },
+      "banda": {
+        "actuador01": 1
+      },
+      "brazo": {
+        "actuador02": 180
+      },
+      "alerta": {
+        "actuador03": 1
+      }
+    }
+  }
+}
