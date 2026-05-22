@@ -1,7 +1,13 @@
-# NOMBRE DEL PROYECTO: BroccoSort AI
-# INTEGRANTES: Mayra Paola Martinez Aranda, Nissi Sarahi Prats Ramirez, Erik Fabian Gonsalez Jimenez
-# DESCRIPCIÓN: Biblioteca HAL optimizada con filtrado antirrebote y calibración dinámica de servo.
-
+"""
+NOMBRE DEL PROYECTO: BroccoSort AI: Sistema Automatizado de Clasificación
+de Hortalizas por Visión y Morfología
+OBJETIVO: Integración de IA para Captura remota y transmisión de imágenes
+de hortalizas hacia el servidor central de IA.
+INTEGRANTES: 
+- Mayra Paola Martínez Aranda (22240233)
+- Nissi Sarahi Prats Ramírez (23240003)
+- Erik Fabian Gonsalez Jimenez (23240022)
+"""
 from machine import Pin, ADC, PWM
 import time
 
