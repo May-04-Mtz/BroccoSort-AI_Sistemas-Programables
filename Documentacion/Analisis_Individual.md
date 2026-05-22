@@ -15,17 +15,44 @@ Este documento detalla los retos técnicos y las soluciones aplicadas por cada m
 
 ---
 
-## 1. Mayra Paola Martínez Aranda
-* **Problema**: Inestabilidad al publicar datos tipo `float` (decimales) del sensor ultrasónico directamente por el protocolo MQTT.
-* **Solución**: Se implementó una capa de conversión a `string` en la ESP32 antes del envío y una lógica de reconversión a `float` en el servidor Python para procesar las dimensiones con precisión.
-* **Conclusión**: El uso de la HAL (Capa de Abstracción de Hardware) permitió separar la lógica de lectura física de la lógica de comunicación, facilitando las pruebas de software.
+### 1. Mayra Paola Martínez Aranda
+* **Clave de Estudiante:** 22240233
+* **Rol en el Pipeline:** Infraestructura de Red, Conectividad y HAL (Hardware Abstraction Layer)
+#### Problema en Red e Infraestructura
+Inestabilidad al publicar datos tipo `float` (decimales) del sensor ultrasónico directamente por el protocolo MQTT. Asimismo, durante la integración del pipeline de Inteligencia Artificial, la solicitud HTTP (`requests.get`) realizada desde el servidor central de Python hacia la **ESP32-CAM** fallaba de forma intermitente debido a que la placa cambiaba dinámicamente de dirección IP por asignación DHCP al reiniciarse o perder energía en la maqueta, perdiendo la sincronización con el modelo de clasificación.
 
-## 2. Nissi Sarahi Prats Ramírez
-* **Problema**: Pérdida intermitente de conexión con el Broker MQTT debido a la interferencia electromagnética generada por el motor de la banda transportadora.
-* **Solución**: Se integró un bloque `try-except` en el loop principal de MicroPython para gestionar excepciones de red y forzar la reconexión automática del cliente MQTT sin detener el programa.
-* **Conclusión**: La robustez de un sistema IoT depende críticamente de una gestión de errores eficiente en la capa de comunicación.
+#### Solución Aplicada
+Se implementó una capa de conversión de tipos a `string` en el MicroPython de la ESP32 antes del envío por red, añadiendo una lógica inversa de reconversión en el servidor Python central. Adicionalmente, se modificó la configuración de red en la función `conectar_wifi()` dentro del archivo de la cámara forzando una **dirección IP estática fija** (`192.168.8.27`) mediante la sub-librería `wlan.ifconfig()`, garantizando la disponibilidad inmediata y predecible del recurso web de captura de imágenes.
 
-## 3. Erik Fabián González Jiménez
-* **Problema**: Latencia excesiva entre la detección del brócoli por los sensores y el accionamiento del servomotor clasificador.
-* **Solución**: Se optimizaron los tiempos de espera (`time.sleep`) en el script principal y se ajustaron los *callbacks* de suscripción MQTT para que la respuesta a los comandos sea inmediata.
-* **Conclusión**: El protocolo MQTT demostró ser ideal para el proyecto BroccoSort AI por su ligereza y su capacidad de respuesta casi en tiempo real.
+#### Conclusión
+El uso de una HAL (Capa de Abstracción de Hardware) permite aislar por completo la lógica de lectura física de las variables de comunicación de red. Del mismo modo, la predictibilidad de la infraestructura local mediante direccionamiento estático en entornos perimetrales es obligatoria para evitar la caída total de un pipeline continuo de datos distribuidos en tiempo real.
+
+---
+
+### 2. Nissi Sarahi Prats Ramírez
+* **Clave de Estudiante:** 23240003
+* **Rol en el Pipeline:** Gestión de Errores y Preprocesamiento de Respuestas de la IA
+
+#### Problema en Gestión de Errores e IA
+Pérdida intermitente de la conexión con el Broker MQTT debido a la interferencia electromagnética severa generada por las bobinas del motor DC de la banda transportadora. Adicionalmente, el modelo de clasificación de IA (Roboflow Inference API) generaba fallos de sintaxis en el intérprete del servidor central al retornar etiquetas con caracteres especiales o acentos (por ejemplo, `'floración'` vs `'floracion'`), lo que provocaba que la lógica condicional no reconociera la clase e introdujera comportamientos erráticos o nulos en los actuadores.
+
+#### Solución Aplicada
+Se integró estructuralmente un bloque de manejo de excepciones `try-except` dentro del loop principal de ejecución en MicroPython para interceptar fallos del socket de red y forzar la reconexión automática del cliente sin detener la banda transportadora. Para mitigar los fallos de la IA, se implementó una rutina de normalización del payload JSON en Python usando métodos de limpieza de cadenas como `.lower().strip()` complementado con operadores lógicos de pertenencia (`any`), aislando la toma de decisiones críticas de cualquier variación ortográfica del modelo.
+
+#### Conclusión
+La robustez física de un ecosistema IoT industrializado depende estrictamente de una tolerancia a fallos eficiente implementada a nivel software en la capa de comunicación. Además, el codiseño de sistemas ciberfísicos inteligentes requiere de filtros avanzados de normalización de datos antes de traducir una inferencia probabilística en un comando motriz directo sobre el actuador.
+
+---
+
+### 3. Erik Fabián González Jiménez
+* **Clave de Estudiante:** 23240022
+* **Rol en el Pipeline:** Sincronización Temporal, Optimización de Latencia y Actuación Física
+
+#### Problema en Latencia y Sincronización
+Se presentó una latencia excesiva en el bucle cerrado del sistema: desde que los sensores detectaban la hortaliza hasta el accionamiento físico del servomotor clasificador. Este problema se agravó exponencialmente al acoplar el procesamiento de imágenes, ya que el tiempo de ida y vuelta de la red combinado con la inferencia de la red neuronal en el servidor central retrasaba la respuesta mecánica, causando que el brazo clasificador golpeara el brócoli fuera de tiempo o cuando ya había avanzado demasiado en la banda transportadora.
+
+#### Solución Aplicada
+Se optimizaron minuciosamente los delays de control (`time.sleep`) en el script de MicroPython y se reestructuraron los callbacks de suscripción MQTT para acelerar el procesamiento de interrupciones de red. Paralelamente, se ajustaron los tiempos de retención mecánica en el servidor de Python a un delta estricto de `time.sleep(2.5)`, forzando una publicación inmediata de retorno al estado seguro (`0°`) tras enviar la instrucción de clasificación, sincronizando la velocidad algorítmica con el avance mecánico real de la maqueta.
+
+#### Conclusión
+El protocolo MQTT demuestra ser una tecnología idónea en IoT debido a su ligereza basada en publicación/suscripción. Sin embargo, la viabilidad operativa de la inteligencia perimetral integrada depende del balanceo preciso de las cargas de trabajo; la latencia acumulada por la inferencia de IA y el tráfico de red debe estar calibrada matemáticamente en relación directa con las constantes mecánicas y físicas del hardware empleado.
