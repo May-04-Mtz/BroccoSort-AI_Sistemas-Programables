@@ -12,19 +12,19 @@ Implementar un sistema automatizado de clasificación de hortalizas que utiliza 
 # Descripcion
 Proyecto de clasificación automatizada de brócoli con ESP32, MQTT y Python
 
-### 🎓 Instituto Tecnológico de León
+### Instituto Tecnológico de León
 **Materia:** Sistemas Programables (ISC)  
 **Profesor:** M.C. Rocío E. Alatorre  
 **Fecha de Entrega:** 3 de junio de 2026  
 
 ---
 
-## 🎯 Objetivo General del Dashboard e Interfaz de Usuario
+## Objetivo General del Dashboard e Interfaz de Usuario
 Garantizar la supervisión perimetral y la persistencia de datos en la nube mediante un ecosistema IoT integrado con **Firebase Realtime Database**. La interfaz gráfica desarrollada faculta el monitoreo síncrono de las variables morfológicas del entorno (distancia del sensor ultrasónico, niveles de iluminación local LDR y el estado de tránsito por sensor infrarrojo). 
 
 Asimismo, provee un canal de **Control Bidireccional Activo** que permite al operador de la planta enviar comandos remotos inmediatos (Arrancar/Parar) sobre el Puente H de la banda transportadora para detener el flujo ante contingencias operativas.
 
-## 🛡️ Políticas de Privacidad y Cumplimiento de Datos Visuales
+## Políticas de Privacidad y Cumplimiento de Datos Visuales
 En estricto apego a las buenas prácticas de la ingeniería de software y la seguridad informática, el sistema cuenta con un esquema de protección de datos:
 * **Inferencia Local Efímera:** Las capturas binarias JPEG solicitadas a la `ESP32-CAM` se procesan únicamente en la memoria RAM del servidor Python para la obtención de la clase por el SDK de Roboflow.
 * **Anonimización en la Nube:** Queda totalmente restringido y deshabilitado el almacenamiento de imágenes, rostros o entornos físicos en la base de datos de Firebase. 
