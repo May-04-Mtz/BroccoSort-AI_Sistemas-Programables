@@ -69,5 +69,5 @@ Según la inferencia calculada en tiempo real por el modelo de IA en el servidor
 │ Descarte / Merma Orgánica │      │ Procesamiento Industrial  │       │   Embarque / Venta Fresca │
 └───────────────────────────┘      └───────────────────────────┘       └───────────────────────────┘
             ▲                                    ▲                                   ▲
-      🔊 Buzzer Largo                      🔊 Buzzer Corto                     🔊 Silencio
-      🔴 LED Rojo                          🟡 LED Amarillo                     🟢 LED Verde
+      Buzzer Largo                      Buzzer Corto                     Silencio
+      LED Rojo                          LED Amarillo                     LED Verde
