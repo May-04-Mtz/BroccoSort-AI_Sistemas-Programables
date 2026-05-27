@@ -14,8 +14,8 @@ Proyecto de clasificación automatizada de brócoli con ESP32, MQTT y Python
 
 ### Instituto Tecnológico de León
 **Materia:** Sistemas Programables (ISC)  
-**Profesor:** M.C. Rocío E. Alatorre  
-**Fecha de Entrega:** 3 de junio de 2026  
+**Profesor:** MA VERONICA TAPIA IBARRA
+**Fecha de Entrega:** 20 de mayo de 2026  
 
 ---
 
