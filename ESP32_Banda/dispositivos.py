@@ -1,136 +1,140 @@
-"""
-NOMBRE DEL PROYECTO: BroccoSort AI: Sistema Automatizado de Clasificación
-de Hortalizas por Visión y Morfología
-OBJETIVO: Integración de IA para Captura remota y transmisión de imágenes
-de hortalizas hacia el servidor central de IA.
-INTEGRANTES: 
-- Mayra Paola Martínez Aranda (22240233)
-- Nissi Sarahi Prats Ramírez (23240003)
-- Erik Fabian Gonsalez Jimenez (23240022)
-"""
+# ------------------------------------------------------------------
+# PROYECTO: BroccoSort AI: Sistema Automatizado de Clasificación 
+#           de Hortalizas por Visión y Morfología
+# INTEGRANTES: 
+# - Mayra Paola Martínez Aranda (22240233)
+# - Nissi Sarahi Prats Ramírez (23240003)
+# - Erik Fabian Gonsalez Jimenez (23240022)
+# DESCRIPCIÓN:Actúa como la interfaz de comunicación de alto nivel para la gestión de eventos en tiempo real.
+#Este módulo centraliza tanto la telemetría (envío de estados de sensores hacia la nube) como el control de actuadores 
+#(recepción de comandos de la IA), asegurando que la ESP32 se mantenga siempre sincronizada con el estado global del sistema de clasificación.
+# ------------------------------------------------------------------
+
 from machine import Pin, ADC, PWM
 import time
 
-class SensorBox:
-    """Gestiona la lectura y estabilización de los sensores del sistema."""
+class Servomotor:
+    def __init__(self, pin_salida, frecuencia=50, ciclo_minimo=26, ciclo_maximo=123):
+        self.pulso_modulado = PWM(Pin(pin_salida), freq=frecuencia)
+        self.ciclo_minimo = ciclo_minimo
+        self.rango_ciclo = ciclo_maximo - ciclo_minimo
+
+    def mover_angulo(self, angulo_grados):
+        if angulo_grados < 0: angulo_grados = 0
+        if angulo_grados > 180: angulo_grados = 180
+        calculo_ciclo = int(((angulo_grados / 180) * self.rango_ciclo) + self.ciclo_minimo)
+        self.pulso_modulado.duty(calculo_ciclo)
+
+    def desactivar_pulso(self):
+        self.pulso_modulado.duty(0)
+
+
+class CajaSensores:
     def __init__(self):
-        # Sensor Ultrasónico (Trigger: Pin 5, Echo: Pin 18)
-        self.disparador = Pin(5, Pin.OUT)
-        self.eco = Pin(18, Pin.IN)
-        
-        # Sensor Infrarrojo
-        self.sensor_presencia = Pin(19, Pin.IN)
-        
-        # Sensor LDR
-        self.sensor_luz = ADC(Pin(34))
-        self.sensor_luz.atten(ADC.ATTN_11DB) 
+        self.disparador_pulso = Pin(12, Pin.OUT)
+        self.eco_pulso = Pin(14, Pin.IN)
+        self.barrera_infrarrojo = Pin(19, Pin.IN)
+        self.conversor_luminosidad = ADC(Pin(34))
+        self.conversor_luminosidad.atten(ADC.ATTN_11DB) 
 
     def leer_distancia_cm(self):
-        lecturas = []
-        for _ in range(5):
-            self.disparador.value(0)
+        muestras = []
+        for _ in range(3):
+            self.disparador_pulso.value(0)
             time.sleep_us(2)
-            self.disparador.value(1)
+            self.disparador_pulso.value(1)
             time.sleep_us(10)
-            self.disparador.value(0)
+            self.disparador_pulso.value(0)
             
-            inicio_timeout = time.ticks_us()
-            while self.eco.value() == 0:
-                if time.ticks_diff(time.ticks_us(), inicio_timeout) > 30000:
-                    return -1  
+            limite = time.ticks_us()
+            while self.eco_pulso.value() == 0:
+                if time.ticks_diff(time.ticks_us(), limite) > 20000: return -1.0
             
             inicio = time.ticks_us()
-            while self.eco.value() == 1:
-                if time.ticks_diff(time.ticks_us(), inicio_timeout) > 30000:
-                    return -1  
+            while self.eco_pulso.value() == 1:
+                if time.ticks_diff(time.ticks_us(), limite) > 20000: return -1.0
             
-            fin = time.ticks_us()
-            duracion = time.ticks_diff(fin, inicio)
-            distancia = (duracion * 0.0343) / 2
-            lecturas.append(distancia)
-            time.sleep_ms(10) 
-            
-        return sum(lecturas) / len(lecturas)
+            duracion = time.ticks_diff(time.ticks_us(), inicio)
+            muestras.append((duracion * 0.0343) / 2)
+            time.sleep_ms(5)
+        return sum(muestras) / len(muestras) if muestras else -1.0
 
-    def hay_objeto(self):
-        """Filtrado digital antirrebote (40ms totales)."""
-        for _ in range(8): 
-            if self.sensor_presencia.value() != 0:
-                return False 
-            time.sleep_ms(5) 
+    def comprobar_presencia_objeto(self):
+        for _ in range(5): 
+            if self.barrera_infrarrojo.value() != 0: return False 
+            time.sleep_ms(4) 
         return True 
 
-    def leer_nivel_luz(self):
+    def leer_porcentaje_luz(self):
         suma = 0
-        for _ in range(5):
-            suma += self.sensor_luz.read()
-            time.sleep_ms(10) 
-        promedio = suma / 4095
-        return promedio * 100
+        for _ in range(4):
+            suma += self.conversor_luminosidad.read()
+            time.sleep_ms(5)
+        return ((suma / 4) / 4095) * 100
 
-    def obtener_resumen_sensores(self):
+    def generar_reporte_variables(self):
         return {
-            "distancia": self.leer_distancia_cm(),
-            "presencia": self.hay_objeto(),
-            "luz": self.leer_nivel_luz()
+            "distancia_cm": self.leer_distancia_cm(),
+            "objeto_presente": self.comprobar_presencia_objeto(),
+            "porcentaje_iluminacion": self.leer_porcentaje_luz()
         }
 
-class ActuatorBox:
-    """Controla los motores, servos, zumbador y LEDs indicadores."""
+
+class CajaActuadores:
     def __init__(self):
-        self.brazo = PWM(Pin(13), freq=50)
-        self.MIN_DUTY = 26  
-        self.RANGO_DUTY = 97 
+        # Mapeo físico validado sin colisiones con la cámara
+        self.servomotor_izquierdo = Servomotor(pin_salida=2)  # Servo Desviador 1 (Fresco)
+        self.servomotor_derecho = Servomotor(pin_salida=4)    # Servo Desviador 2 (Maduro)
         
-        self.motor_banda_a = Pin(12, Pin.OUT)
-        self.motor_banda_b = Pin(14, Pin.OUT)
-        self.zumbador = Pin(15, Pin.OUT)
+        # --- MODIFICADO: Conexiones del Puente H L298N con control PWM de Velocidad ---
+        # Configuramos el pin 21 como PWM a 1000Hz para poder regular su potencia
+        self.pista_motor_a = PWM(Pin(21), freq=1000)
+        self.pista_motor_b = Pin(22, Pin.OUT)
         
-        self.led_verde = Pin(2, Pin.OUT)
-        self.led_amarillo = Pin(4, Pin.OUT)
-        self.led_rojo = Pin(33, Pin.OUT)
-        self.apagar_leds()
+        # Matriz de LEDs e Indicador Acústico de 3 pines
+        self.led_indicador_amarillo = Pin(15, Pin.OUT)
+        self.led_indicador_verde = Pin(27, Pin.OUT)
+        self.led_indicador_rojo = Pin(26, Pin.OUT)
+        self.pin_buzzer_io = Pin(25, Pin.OUT)  
+        
+        self.apagar_matriz_visual()
 
-    def mover_brazo_clasificador(self, angulo):
-        ciclo = int(((angulo / 180) * self.RANGO_DUTY) + self.MIN_DUTY)
-        self.brazo.duty(ciclo)
-        
-        if angulo == 0:       
-            self.fijar_leds(verde=True)
-        elif angulo == 90:    
-            self.fijar_leds(amarillo=True)
-        elif angulo == 180:   
-            self.fijar_leds(rojo=True)
-        else:                 
-            self.apagar_leds()
-
-    def control_banda(self, encendido):
-        if encendido:
-            self.motor_banda_a.value(1)
-            self.motor_banda_b.value(0)
+    def operar_motores_traccion(self, estado_marcha):
+        """Controla el encendido, apagado y la velocidad física de la banda."""
+        if estado_marcha:
+            # En MicroPython el rango de PWM va de 0 (detenido) a 1023 (máxima velocidad).
+            # Cambia el valor 650 para ajustar la velocidad a tu gusto:
+            # 550 = Muy Lento | 650 = Lento Moderado | 800 = Rápido | 1023 = Máxima velocidad
+            self.pista_motor_a.duty(650) 
+            self.pista_motor_b.value(0)
         else:
-            self.motor_banda_a.value(0)
-            self.motor_banda_b.value(0)
+            self.pista_motor_a.duty(0)   
+            self.pista_motor_b.value(0)
 
-    def activar_alerta_error(self, duracion=0.5):
-        self.zumbador.value(1)
-        time.sleep(duracion)
-        self.zumbador.value(0)
+    def ejecutar_accion_clasificador(self, angulo_izq, angulo_der, color_led, activar_alarma):
+        """Mueve los servos de compuerta de manera coordinada."""
+        self.servomotor_izquierdo.mover_angulo(angulo_izq)
+        self.servomotor_derecho.mover_angulo(angulo_der)
+        
+        self.apagar_matriz_visual()
+        if color_led == "amarillo": self.led_indicador_amarillo.value(1)
+        elif color_led == "verde": self.led_indicador_verde.value(1)
+        elif color_led == "rojo": self.led_indicador_rojo.value(1)
 
-    def fijar_leds(self, verde=False, amarillo=False, rojo=False):
-        self.led_verde.value(1 if verde else 0)
-        self.led_amarillo.value(1 if amarillo else 0)
-        self.led_rojo.value(1 if rojo else 0)
+        if activar_alarma:
+            # Pulso digital al pin I/O del módulo de 3 pines
+            self.pin_buzzer_io.value(1)
+            time.sleep(0.5)
+            self.pin_buzzer_io.value(0)
 
-    def apagar_leds(self):
-        self.led_verde.value(0)
-        self.led_amarillo.value(0)
-        self.led_rojo.value(0)
+    def apagar_matriz_visual(self):
+        self.led_indicador_verde.value(0)
+        self.led_indicador_amarillo.value(0)
+        self.led_indicador_rojo.value(0)
 
-    def estado_seguro(self):
-        self.control_banda(False)
-        self.zumbador.value(0)
-        self.apagar_leds()
-        self.mover_brazo_clasificador(0) 
-        self.brazo.duty(0) 
-        print("🚨 SISTEMA EN ESTADO SEGURO")
+    def establecer_modo_seguro(self):
+        self.operar_motores_traccion(False)
+        self.pin_buzzer_io.value(0)
+        self.apagar_matriz_visual()
+        self.servomotor_izquierdo.desactivar_pulso()
+        self.servomotor_derecho.desactivar_pulso()
