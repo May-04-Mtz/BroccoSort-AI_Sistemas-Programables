@@ -1,13 +1,14 @@
-"""
-NOMBRE DEL PROYECTO: BroccoSort AI: Sistema Automatizado de Clasificación
-de Hortalizas por Visión y Morfología
-OBJETIVO: Integración de IA para Captura remota y transmisión de imágenes
-de hortalizas hacia el servidor central de IA.
-INTEGRANTES: 
-- Mayra Paola Martínez Aranda (22240233)
-- Nissi Sarahi Prats Ramírez (23240003)
-- Erik Fabian Gonsalez Jimenez (23240022)
-"""
+# ------------------------------------------------------------------
+# PROYECTO: BroccoSort AI: Sistema Automatizado de Clasificación 
+#           de Hortalizas por Visión y Morfología
+# INTEGRANTES: 
+# - Mayra Paola Martínez Aranda (22240233)
+# - Nissi Sarahi Prats Ramírez (23240003)
+# - Erik Fabian Gonsalez Jimenez (23240022)
+# DESCRIPCIÓN:Implementar una capa de comunicación industrial basada en el protocolo MQTT, diseñada bajo el estándar 
+de jerarquía de 4 niveles (proyecto/tipo_nodo/nombre_modulo/id_dispositivo). Este módulo garantiza que el intercambio 
+de datos sea predecible, determinista y totalmente compatible con la estructura NoSQL de Firebase.
+# ------------------------------------------------------------------
 
 from umqtt.simple import MQTTClient
 from dispositivos import ActuatorBox
