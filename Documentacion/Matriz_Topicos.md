@@ -32,38 +32,17 @@ Para cumplir estrictamente con el diseño de una arquitectura de tópicos predec
 
 Al organizar los tópicos moviéndose de lo general a lo específico de izquierda a derecha separados por diagonales (`/`), las colecciones NoSQL en la nube se estructuran de forma nativa en un árbol JSON limpio. Esto previene rutas libres o ambiguas que causen lecturas vacías o cruzadas en el Dashboard:
 
-```json
 {
   "broccosort": {
-    "presencia": {
-      "banda01": {
-        "sensor01": 1
-      }
-    },
-    "distancia": {
-      "banda01": {
-        "sensor02": "14.5"
-      }
-    },
-    "luz": {
-      "banda01": {
-        "sensor03": "78.2"
-      }
-    },
-    "banda": {
-      "banda01": {
-        "actuador01": 1
-      }
-    },
-    "brazo": {
-      "banda01": {
-        "actuador02": 180
-      }
-    },
-    "alerta": {
-      "banda01": {
-        "actuador03": 0
-      }
+    "presencia": { "banda01": { "sensor01": 1 } },
+    "distancia": { "banda01": { "sensor02": "14.5" } },
+    "luz": { "banda01": { "sensor03": "78.2" } },
+    "banda": { "banda01": { "actuador01": 1 } },
+    "brazo": { "banda01": { "actuador02": 180 } },
+    "alerta": { "banda01": { "actuador03": 0 } },
+    "historico": {
+      "1781479682": { "clase": "podrido", "confianza": 0.94, "sensor_ir": "activo" },
+      "1781479700": { "clase": "fresco", "confianza": 0.98, "sensor_ir": "activo" }
     }
   }
 }
