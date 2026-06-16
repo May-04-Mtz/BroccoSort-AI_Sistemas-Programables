@@ -1,4 +1,4 @@
-# 🌐 Matriz de Tópicos MQTT y Mapeo NoSQL — BroccoSort AI
+# Matriz de Tópicos MQTT y Mapeo NoSQL — BroccoSort AI
 
 ### Instituto Tecnológico de León
 * **Materia:** Sistemas Programables (ISC)  
@@ -7,7 +7,7 @@
 
 ---
 
-## 🏗️ 1. Arquitectura de Tópicos MQTT (4 Niveles)
+## 1. Arquitectura de Tópicos MQTT (4 Niveles)
 
 Para cumplir con el diseño de una arquitectura de tópicos predecible, jerárquica y estandarizada bajo normas industriales, se ha implementado un formato rígido de **4 niveles** en todo el ecosistema IoT. Esto evita rutas ambiguas, colisiones de datos y garantiza una sincronización directa con la base de datos distribuida.
 
@@ -26,7 +26,7 @@ Para cumplir con el diseño de una arquitectura de tópicos predecible, jerárqu
 
 ---
 
-## ☁️ 2. Mapeo Estructurado en Firebase Realtime Database (NoSQL)
+## 2. Mapeo Estructurado en Firebase Realtime Database (NoSQL)
 
 Al organizar los tópicos moviéndose de lo general a lo específico de izquierda a derecha separados por diagonales (`/`), las colecciones NoSQL en la nube se estructuran de forma nativa en un árbol JSON limpio. Esto mapea de forma idéntica la topología de la planta y previene rutas huérfanas que causen lecturas vacías o cruzadas en el Dashboard:
 
