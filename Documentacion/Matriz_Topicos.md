@@ -32,15 +32,47 @@ Al organizar los tópicos moviéndose de lo general a lo específico de izquierd
 
 {
   "broccosort": {
-    "presencia": { "banda01": { "sensor01": 1 } },
-    "distancia": { "banda01": { "sensor02": "14.5" } },
-    "luz": { "banda01": { "sensor03": "78.2" } },
-    "banda": { "banda01": { "actuador01": 1 } },
-    "brazo": { "banda01": { "actuador02": 180 } },
-    "alerta": { "banda01": { "actuador03": 0 } },
+    "presencia": {
+      "banda01": {
+        "sensor01": 1
+      }
+    },
+    "distancia": {
+      "banda01": {
+        "sensor02": "14.5"
+      }
+    },
+    "luz": {
+      "banda01": {
+        "sensor03": "78.2"
+      }
+    },
+    "banda": {
+      "banda01": {
+        "actuador01": 1
+      }
+    },
+    "brazo": {
+      "banda01": {
+        "actuador02": 180
+      }
+    },
+    "alerta": {
+      "banda01": {
+        "actuador03": 0
+      }
+    },
     "historico": {
-      "1781479682": { "clase": "podrido", "confianza": 0.94, "sensor_ir": "activo" },
-      "1781479700": { "clase": "fresco", "confianza": 0.98, "sensor_ir": "activo" }
+      "1781479682": {
+        "clase": "podrido",
+        "confianza": 0.94,
+        "sensor_ir": "activo"
+      },
+      "1781479700": {
+        "clase": "fresco",
+        "confianza": 0.98,
+        "sensor_ir": "activo"
+      }
     }
   }
 }
