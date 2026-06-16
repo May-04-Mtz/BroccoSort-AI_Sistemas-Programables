@@ -1,127 +1,92 @@
 """
-NOMBRE DEL PROYECTO: BroccoSort AI: Sistema Automatizado de Clasificación
-de Hortalizas por Visión y Morfología
-OBJETIVO: Integración de IA para Captura remota y transmisión de imágenes
-de hortalizas hacia el servidor central de IA.
-INTEGRANTES: 
-- Mayra Paola Martínez Aranda (22240233)
-- Nissi Sarahi Prats Ramírez (23240003)
-- Erik Fabian Gonsalez Jimenez (23240022)
+# ------------------------------------------------------------------
+# PROYECTO: BroccoSort AI: Sistema Automatizado de Clasificación
+#           de Hortalizas por Visión y Morfología
+# INTEGRANTES:
+# - Mayra Paola Martínez Aranda (22240233)
+# - Nissi Sarahi Prats Ramírez (23240003)
+# - Erik Fabian Gonsalez Jimenez (23240022)
+# DESCRIPCIÓN: Integración de IA para captura remota de imágenes, 
+#              inferencia con Roboflow y publicación de comandos MQTT.
+# ------------------------------------------------------------------
 """
-
 import os
 import time
-import requests  
+import requests
 import paho.mqtt.client as mqtt
 from roboflow import Roboflow
 from datetime import datetime
 
-# =====================================================================
+# ==========================================
 # 🔴 CONFIGURACIONES ESTRUCTURADAS (4 NIVELES) 🔴
-# =====================================================================
-BROKER_MQTT = "broker.hivemq.com"  
-PUERTO_MQTT = 1883 
-
-# Ajuste estricto de tópicos para alineación con base de datos NoSQL
-TOPICO_PRESENCIA = "broccosort/presencia/banda01/sensor01"
+# ==========================================
+BROKER_MQTT = "broker.hivemq.com"  # Cambiar por la IP de tu broker si es local
+PUERTO_MQTT = 1883
 TOPICO_BRAZO = "broccosort/brazo/banda01/actuador02"
+TOPICO_BANDA = "broccosort/banda/banda01/actuador01"
 
-ESP32_CAM_URL = "http://192.168.8.27/foto" 
-IMAGEN_TEMPORAL = "captura_banda.jpg"
-FIREBASE_URL = "https://broccosort-ai-default-rtdb.firebaseio.com/historial.json"
+# ==========================================
+# 🟢 CREDENCIALES ROBOFLOW E IMAGEN 🟢
+# ==========================================
+RF_API_KEY = "Yhhcj1bdoRo0Cavl2jZV"
+MODEL_ID = "broccoli-8syka-yrzti"
+VERSION = 2
 
-client = mqtt.Client()
-objeto_en_espera = False  
-
-# --- Configuración de Roboflow ---
-print("⏳ Inicializando modelo de IA...")
-rf = Roboflow(api_key="T5jPuaVg9YZzFQq277bt")
-project = rf.workspace().project("broccoli-6n3ht-ininr")
-model = project.version(3).model
-print("✅ IA de Roboflow cargada exitosamente.")
-
-def guardar_en_firebase(estado, confianza):
-    """Envía el registro de clasificación a Firebase Realtime Database"""
-    try:
-        historial_clasificacion = {
-            "fecha_hora": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "estado": estado,
-            "confianza": round(confianza * 100, 2)
-        }
-        respuesta = requests.post(FIREBASE_URL, json=historial_clasificacion, timeout=3)
-        if respuesta.status_code == 200:
-            print("☁️ Datos respaldados en Firebase correctamente sin comprometer el árbol JSON.")
-        else:
-            print(f"⚠️ Firebase rechazó los datos. Código: {respuesta.status_code}")
-    except Exception as e:
-        print(f"❌ Error al conectar con Firebase: {e}")
-
-def procesar_clasificacion(client):
-    try:
-        print("\n📸 Detectado. Solicitando captura a la ESP32-CAM...")
-        respuesta = requests.get(ESP32_CAM_URL, timeout=5)
-        
-        if respuesta.status_code == 200:
-            with open(IMAGEN_TEMPORAL, 'wb') as f:
-                f.write(respuesta.content)
-            
-            prediction = model.predict(IMAGEN_TEMPORAL, confidence=25).json()
-            detecciones = prediction["predictions"]
-
-            if len(detecciones) > 0:
-                clases_encontradas = [det["class"].lower().strip() for det in detecciones]
-                clase_principal = detecciones[0]["class"]
-                confianza_principal = detecciones[0]["confidence"]
-                
-                for det in detecciones:
-                    print(f"🎯 DETECTADO: {det['class']} ({det['confidence'] * 100:.1f}%)")
-
-                # Lógica de toma de decisiones mapeada a actuadores
-                if any("podrido" in c for c in clases_encontradas):
-                    print("🚨 RECHAZADO: Estado podrido. Moviendo brazo a 180°.")
-                    client.publish(TOPICO_BRAZO, "180")
-                    guardar_en_firebase("podrido", confianza_principal)
-                    time.sleep(2.5)  
-                    client.publish(TOPICO_BRAZO, "0")
-
-                elif any("floracion" in c for c in clases_encontradas) or any("floración" in c for c in clases_encontradas):
-                    print("⚠️ FLORACIÓN: Calidad media. Moviendo brazo a 90°.")
-                    client.publish(TOPICO_BRAZO, "90")
-                    guardar_en_firebase("floracion", confianza_principal)
-                    time.sleep(2.5)
-                    client.publish(TOPICO_BRAZO, "0")
-                else:
-                    print("🍏 APTO: Brócoli óptimo. Sigue curso a 0°.")
-                    client.publish(TOPICO_BRAZO, "0")
-                    guardar_en_firebase("apto", confianza_principal)
-            else:
-                print("❓ Clasificación ambigua. Pasa por defecto.")
-                client.publish(TOPICO_BRAZO, "0")
-                guardar_en_firebase("indeterminado", 0.0)
-        else:
-            print("❌ Error: La cámara no respondió.")
-    except Exception as e:
-        print(f"⚠️ Fallo en el bucle de la IA: {e}")
+# Ajusta esta IP a la de la ESP32-CAM o IP Webcam del celular
+URL_CAMARA = "http://192.168.200.50:8080/photo.jpg" 
 
 def on_connect(client, userdata, flags, rc):
-    if rc == 0:
-        print("🌐 Servidor de IA conectado al Broker bajo estándar de 4 niveles")
-        client.subscribe(TOPICO_PRESENCIA)
-    else:
-        print(f"❌ Fallo de conexión. Código: {rc}")
+    print(f"✅ [MQTT] Enlace establecido con el Broker. Código de estado: {rc}")
 
-def on_message(client, userdata, msg):
-    global objeto_en_espera
-    valor = msg.payload.decode()
-    
-    if valor == "1" and not objeto_en_espera:
-        objeto_en_espera = True
-        procesar_clasificacion(client)
-    elif valor == "0":
-        objeto_en_espera = False  
+# Inicialización MQTT
+cliente_mqtt = mqtt.Client()
+cliente_mqtt.on_connect = on_connect
+cliente_mqtt.connect(BROKER_MQTT, PUERTO_MQTT, 60)
+cliente_mqtt.loop_start()
 
-if __name__ == "__main__":
-    client.on_connect = on_connect
-    client.on_message = on_message
-    client.connect(BROKER_MQTT, PUERTO_MQTT, 60)
-    client.loop_forever()
+# Inicialización Roboflow
+rf = Roboflow(api_key=RF_API_KEY)
+project = rf.workspace().project(MODEL_ID)
+model = project.version(VERSION).model
+
+print("🚀 Iniciando Motor de IA BroccoSort (DATASET_2)...")
+
+while True:
+    try:
+        # 1. Obtener imagen remota
+        respuesta = requests.get(URL_CAMARA, timeout=5)
+        if respuesta.status_code == 200:
+            with open("captura_temp.jpg", "wb") as f:
+                f.write(respuesta.content)
+
+            # 2. Inferencia con IA
+            prediccion = model.predict("captura_temp.jpg", confidence=40, overlap=30).json()
+
+            if "predictions" in prediccion and len(prediccion["predictions"]) > 0:
+                mejor_prediccion = prediccion["predictions"][0]
+                clase = mejor_prediccion["class"].lower().strip()
+                confianza = mejor_prediccion["confidence"]
+
+                print(f"🥦 [IA] Detectado: {clase.upper()} (Confianza: {confianza:.2f})")
+
+                # 3. Lógica de control físico y envío MQTT
+                angulo = 0
+                if clase == "fresco":
+                    angulo = 0    # Posición neutra
+                elif clase == "maduro":
+                    angulo = 90   # Desvío moderado
+                elif clase == "podrido":
+                    angulo = 180  # Desvío al contenedor de merma
+
+                # Publicar a los tópicos industriales de 4 niveles
+                cliente_mqtt.publish(TOPICO_BRAZO, str(angulo))
+                
+            else:
+                print("⏳ [IA] Banda despejada. Esperando hortaliza...")
+
+        # Pausa para no saturar la red ni la API
+        time.sleep(2)
+
+    except Exception as e:
+        print(f"❌ Error en el pipeline de visión/red: {e}")
+        time.sleep(3)
