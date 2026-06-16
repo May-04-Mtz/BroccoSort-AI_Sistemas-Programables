@@ -14,26 +14,26 @@
 
 ---
 
-## 🎯 Objetivo del Proyecto
+## Objetivo del Proyecto
 Implementar un sistema automatizado de clasificación de hortalizas que utiliza visión artificial y sensores físicos para categorizar brócoli según su estado de madurez (color) y dimensiones (tamaño). El sistema busca optimizar la producción agrícola local mediante una banda transportadora controlada por un ESP32 S3 CAM, la cual desvía automáticamente el producto de baja calidad, emite alertas sonoras y visuales, y permite el monitoreo remoto de estadísticas de producción a través de una interfaz web y notificaciones en la nube.
 
 ---
 
-## 📂 Estructura del Repositorio y Módulos
+## Estructura del Repositorio y Módulos
 
 El ecosistema de software se encuentra completamente desacoplado y estructurado de la siguiente forma para cumplir con los estándares de diseño modular:
 
-### 🎛️ Modulo ESP32 (Firmware Local)
+### Modulo ESP32 (Firmware Local)
 * **`main.py` / `firmware_control.py`**: Nodo de ejecución física. Supervisa continuamente los sensores perimetrales (IR, ultrasónico, LDR) y traduce los comandos lógicos enviados por el servidor de visión artificial en acciones mecánicas precisas sobre la banda transportadora a través del puente H L298N.
 * **`dispositivos.py`**: Capa de Abstracción de Hardware (HAL) que define y encapsula las clases para la gestión de periféricos, aislando los pines físicos de la lógica de comunicación.
 
-### 🖥️ Módulos de Servidor (Python Central)
+### Módulos de Servidor (Python Central)
 * **`DATASET_2.py`**: Orquestador de Visión Artificial. Realiza la captura de video en tiempo real mediante un área de recorte controlada (ROI), ejecuta el pipeline de inferencia con el SDK de Roboflow y publica las decisiones de control hacia la red MQTT.
 * **`servidor_broccosort.py`**: Backend Logger del Sistema. Actúa como puente entre la red local y la nube; se suscribe a los tópicos de control, procesa las métricas de rendimiento y persiste los registros en Firebase en un formato JSON incremental indexado.
 
 ---
 
-## 🌐 Matriz de Tópicos MQTT - Estándar Industrial (4 Niveles)
+## Matriz de Tópicos MQTT - Estándar Industrial (4 Niveles)
 
 Para garantizar un diseño predecible y estandarizado, se ha implementado un formato rígido de 4 niveles en todo el ecosistema. Esto previene rutas libres o ambiguas que causen lecturas cruzadas en el sistema.
 
@@ -50,7 +50,7 @@ Para garantizar un diseño predecible y estandarizado, se ha implementado un for
 
 ---
 
-## ☁️ Mapeo Estructurado en Firebase Realtime Database (NoSQL)
+## Mapeo Estructurado en Firebase Realtime Database (NoSQL)
 
 Al mover los tópicos de lo general a lo específico de izquierda a derecha separados por diagonales (`/`), las colecciones NoSQL en la nube se estructuran de forma nativa en un árbol JSON limpio, garantizando una sincronización perfecta con el Dashboard:
 
