@@ -75,6 +75,6 @@ Al organizar los tópicos moviéndose de lo general a lo específico de izquierd
         "sensor_ir": "activo"
       }
     }
-```
   }
 }
+```
