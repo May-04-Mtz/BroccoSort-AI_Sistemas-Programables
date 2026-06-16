@@ -3,7 +3,7 @@
 ### Instituto Tecnológico de León
 * **Materia:** Sistemas Programables (ISC)  
 * **Profesor:** MA VERONICA TAPIA IBARRA  
-* **Fecha de Entrega:** 20 de mayo de 2026  
+* **Fecha de Entrega:** 16 de junio de 2026  
 
 ---
 
