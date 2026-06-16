@@ -10,12 +10,23 @@ Implementar un sistema automatizado de clasificación de hortalizas que utiliza 
 "BroccoSort AI: Sistema Automatizado de Clasificación de Hortalizas por Visión y Morfología"
 
 # Matriz de Tópicos MQTT - Estándar Industrial (4 Niveles)
+### 1. Arquitectura de Tópicos MQTT (4 Niveles)
+Para cumplir con el diseño de una arquitectura de tópicos predecible y estandarizada, se ha implementado un formato rígido de 4 niveles en todo el ecosistema. Esto garantiza una sincronización perfecta con la estructura NoSQL de Firebase Realtime Database.
 
-Para cumplir estrictamente con el diseño de una arquitectura de tópicos predecible y estandarizada exigida en la retroalimentación, y garantizar una sincronización perfecta con la estructura NoSQL de **Firebase Realtime Database** sin corromper el árbol de datos, se ha implementado el formato rígido de 4 niveles en todo el ecosistema.
+**Jerarquía Estándar:** `proyecto / tipo_nodo / nombre_modulo / id_dispositivo`
 
-> **Jerarquía Estándar Obligatoria:** `proyecto / tipo_nodo / nombre_modulo / id_dispositivo`
+#### Tabla de Mapeo del Ecosistema IoT
 
-## Tabla de Mapeo del Ecosistema IoT (100% Sensores y Actuadores)
+| Nivel 1: Proyecto | Nivel 2: Tipo Nodo | Nivel 3: Módulo | Nivel 4: ID Disp. | Dirección | Formato | Descripción Técnica |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `broccosort` | `presencia` | `banda01` | `sensor01` | ESP32 → Py | `1` o `0` | Trigger óptico/IR para inicio de pipeline. |
+| `broccosort` | `distancia` | `banda01` | `sensor02` | ESP32 → Py | `String` | Telemetría ultrasónica para dimensiones. |
+| `broccosort` | `luz` | `banda01` | `sensor03` | ESP32 → Py | `String` | Nivel LDR para calibración lumínica. |
+| `broccosort` | `banda` | `banda01` | `actuador01` | Py → ESP32 | `1` o `0` | Control de motor de banda. |
+| `broccosort` | `brazo` | `banda01` | `actuador02` | Py → ESP32 | `0-180` | Posición angular del servo clasificador. |
+| `broccosort` | `alerta` | `banda01` | `actuador03` | Py → ESP32 | `1` o `0` | Activación de zumbador acústico. |
+
+#### Tabla de Mapeo del Ecosistema IoT
 
 | Nivel 1: Proyecto | Nivel 2: Tipo Nodo | Nivel 3: Módulo | Nivel 4: ID Disp. | Dirección de Datos | Formato | Descripción Técnica |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
