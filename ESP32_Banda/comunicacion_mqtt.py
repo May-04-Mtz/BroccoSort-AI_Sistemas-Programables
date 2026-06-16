@@ -5,80 +5,53 @@
 # - Mayra Paola Martínez Aranda (22240233)
 # - Nissi Sarahi Prats Ramírez (23240003)
 # - Erik Fabian Gonsalez Jimenez (23240022)
-# DESCRIPCIÓN:Implementar una capa de comunicación industrial basada en el protocolo MQTT, diseñada bajo el estándar 
-#de jerarquía de 4 niveles (proyecto/tipo_nodo/nombre_modulo/id_dispositivo). Este módulo garantiza que el intercambio 
-#de datos sea predecible, determinista y totalmente compatible con la estructura NoSQL de Firebase.
+# DESCRIPCIÓN:Actúa como la interfaz de comunicación de alto nivel para la gestión de eventos en tiempo real.
+#Este módulo centraliza tanto la telemetría (envío de estados de sensores hacia la nube) como el control de actuadores 
+#(recepción de comandos de la IA), asegurando que la ESP32 se mantenga siempre sincronizada con el estado global del sistema de clasificación.
 # ------------------------------------------------------------------
 
+import time
+import ujson
 from umqtt.simple import MQTTClient
-from dispositivos import ActuatorBox
 
-class MQTTHandler:
-    def __init__(self, broker, client_id, actuadores: ActuatorBox):
-        self.client = MQTTClient(client_id, broker)
-        self.actuadores = actuadores
-        self.client.set_callback(self.sub_cb)
-        
-# Definición estricta de tópicos de control (Jerarquía de 4 niveles NoSQL)
-self.TOPICO_BANDA = b"broccosort/banda/banda01/actuador01"
-self.TOPICO_BRAZO = b"broccosort/brazo/banda01/actuador02"
-self.TOPICO_ALERTA = b"broccosort/alerta/banda01/actuador03"
+class ManejadorMQTT:
+    def __init__(self, servidor_broker, id_cliente, instancia_actuadores):
+        self.servidor = servidor_broker
+        self.id_cliente = id_cliente
+        self.actuadores = instancia_actuadores
+        self.cliente = MQTTClient(self.id_cliente, self.servidor)
 
-    def conectar(self):
-        """Establece conexión y se suscribe individualmente a los tópicos estructurados."""
-        self.client.connect()
-        # Nos suscribimos uno a uno para evitar el uso de '#' que rompe la predictibilidad del árbol NoSQL
-        self.client.subscribe(self.TOPICO_BANDA)
-        self.client.subscribe(self.TOPICO_BRAZO)
-        self.client.subscribe(self.TOPICO_ALERTA)
-        print("✅ [MQTT] Conectado al Broker y suscrito a la jerarquía formal de 4 niveles.")
+    def conectar_nodo_central(self):
+        self.cliente.set_callback(self._callback_interno)
+        self.cliente.connect()
+        self.cliente.subscribe(b"broccosort/brazo/banda01/actuador02")
+        print("🌐 Canal MQTT en linea.")
 
-    def sub_cb(self, topic, msg):
-        """
-        CALLBACK DE SUSCRIPCIÓN HAL:
-        Mapea las solicitudes de la red directamente a las acciones físicas encapsuladas.
-        """
-        dato = msg.decode()
-        print(f"📩 Comando recibido [{topic.decode()}]: {dato}")
-        
-        if topic == self.TOPICO_BRAZO:
-            angulo = int(dato)
-            self.actuadores.mover_brazo_clasificador(angulo)
-            if angulo == 180:   
-                self.actuadores.activar_alerta_error(0.6)
-            elif angulo == 90:  
-                self.actuadores.activar_alerta_error(0.15)
-        
-        elif topic == self.TOPICO_BANDA:
-            estado = int(dato) == 1
-            self.actuadores.control_banda(estado)
-            if not estado:
-                self.actuadores.estado_seguro()
-                
-        elif topic == self.TOPICO_ALERTA:
-            self.actuadores.activar_alerta_error()
+    def verificar_mensajes_pendientes(self):
+        self.cliente.check_msg()
 
-    def publicar_telemetria(self, datos):
-        """
-        Mapea dinámicamente las claves del diccionario HAL hacia el estándar NoSQL.
-        Ejemplo: 'presencia' -> 'broccosort/banda01/presencia/sensor01'
-        """
-        # Mapeo explícito para garantizar el id_alfanumerico en el cuarto nivel
-mapeo_topicos = {
-    "presencia": "broccosort/presencia/banda01/sensor01",
-    "distancia": "broccosort/distancia/banda01/sensor02",
-    "luz": "broccosort/luz/banda01/sensor03"
-}
-        
-        for clave, valor in datos.items():
-            if clave in mapeo_topicos:
-                topic = mapeo_topicos[clave]
-                # Conversión limpia a String antes del envío
-                if clave == "presencia":
-                    payload = "1" if valor else "0"
-                elif clave == "distancia":
-                    payload = "{:.1f}".format(valor)
-                else:
-                    payload = "{:.1f}".format(valor)
-                    
-                self.client.publish(topic, payload)
+    def publicar_disparo_presencia(self, estado_binario):
+        self.cliente.publish(b"broccosort/presencia/banda01/sensor01", estado_binario.encode())
+
+    def publicar_estado_telemetria(self, diccionario_datos):
+        trama_json = ujson.dumps(diccionario_datos)
+        self.cliente.publish(b"broccosort/telemetria/banda01/sensores", trama_json.encode())
+
+    def _callback_interno(self, topico, mensaje_crudo):
+        try:
+            datos = ujson.loads(mensaje_crudo.decode('utf-8'))
+            izq = datos["servo_izquierdo"]
+            der = datos["servo_derecho"]
+            color = datos["led_color"]
+            alarma = datos["alerta_sonora"]
+            
+            self.actuadores.ejecutar_accion_clasificador(izq, der, color, alarms)
+            time.sleep(1.5)
+            
+            self.actuadores.servomotor_izquierdo.mover_angulo(0)
+            self.actuadores.servomotor_derecho.mover_angulo(0)
+            self.actuadores.apagar_matriz_visual()
+            self.actuadores.operar_motores_traccion(True)
+        except Exception as e:
+            print("Error MQTT:", e)
+            self.actuadores.establecer_modo_seguro()
