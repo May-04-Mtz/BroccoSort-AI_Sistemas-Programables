@@ -1,1 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoreo de Clasificación</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
 
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-slate-900">Panel de Control de Calidad</h1>
+            <p class="text-slate-500">Monitoreo en tiempo real sincronizado con Firebase</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-xs border-l-4 border-emerald-500">
+                <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Frescos</h3>
+                <p id="count-frescos" class="text-4xl font-extrabold text-slate-800 mt-2">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-xs border-l-4 border-amber-500">
+                <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Maduros</h3>
+                <p id="count-maduros" class="text-4xl font-extrabold text-slate-800 mt-2">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-xs border-l-4 border-rose-500">
+                <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Podridos</h3>
+                <p id="count-podridos" class="text-4xl font-extrabold text-slate-800 mt-2">0</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow-xs flex flex-col items-center justify-center">
+                <h2 class="text-lg font-bold text-slate-700 mb-4 w-full text-left">Gráfica de Comparación</h2>
+                <div class="w-full relative h-[300px]">
+                    <canvas id="canvas-grafica"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-xs">
+                <h2 class="text-lg font-bold text-slate-700 mb-4">Últimos Registros Detectados</h2>
+                <div class="overflow-y-auto max-h-[300px] border border-slate-100 rounded-lg">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">ID / Timestamp</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-registros" class="bg-white divide-y divide-slate-200 text-sm">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Configuración de tu proyecto BroccoSort-AI
+        const firebaseConfig = {
+            apiKey: "AIzaSyBIkOwzQKAiSL3uhREOK_EM31KreIu6pbM",
+            authDomain: "broccosort-ai.firebaseapp.com",
+            databaseURL: "https://broccosort-ai-default-rtdb.firebaseio.com",
+            projectId: "broccosort-ai",
+            storageBucket: "broccosort-ai.firebasestorage.app",
+            messagingSenderId: "177934355071",
+            appId: "1:177934355071:web:2108368477047379278d4a"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Inicializar Chart.js (Gráfica de barras)
+        const ctx = document.getElementById('canvas-grafica').getContext('2d');
+        const miGrafica = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Frescos', 'Maduros', 'Podridos'],
+                datasets: [{
+                    label: 'Cantidad de Elementos',
+                    data: [0, 0, 0], 
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.7)', // Verde Esmeralda (Frescos)
+                        'rgba(245, 158, 11, 0.7)',  // Ámbar (Maduros)
+                        'rgba(239, 68, 68, 0.7)'   // Rojo (Podridos)
+                    ],
+                    borderColor: [
+                        'rgb(16, 185, 129)',
+                        'rgb(245, 158, 11)',
+                        'rgb(239, 68, 68)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+
+        // ESCUCHAR EL NODO CORRECTO CON LA FUNCIÓN REF
+        const registrosRef = ref(db, 'historial_json'); 
+
+        onValue(registrosRef, (snapshot) => {
+            const data = snapshot.val();
+            
+            let frescos = 0;
+            let maduros = 0;
+            let podridos = 0;
+            let filasHTML = '';
+
+            if (data) {
+                Object.keys(data).forEach((key) => {
+                    const item = data[key];
+                    
+                    if (item) {
+                        const estado = item.clase ? item.clase.toLowerCase().trim() : '';
+
+                        // Solo procesar e incluir en la interfaz si es una clasificación válida
+                        if (estado === 'fresco' || estado === 'maduro' || estado === 'podrido') {
+                            
+                            if (estado === 'fresco') frescos++;
+                            else if (estado === 'maduro') maduros++;
+                            else if (estado === 'podrido') podridos++;
+
+                            // Estilos visuales para las etiquetas de la tabla
+                            let badgeColor = 'bg-slate-100 text-slate-800';
+                            if (estado === 'fresco') badgeColor = 'bg-emerald-100 text-emerald-800';
+                            else if (estado === 'maduro') badgeColor = 'bg-amber-100 text-amber-800';
+                            else if (estado === 'podrido') badgeColor = 'bg-rose-100 text-rose-800';
+
+                            // Insertar fila en la parte superior (lo más nuevo primero)
+                            filasHTML = `
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-slate-500 font-mono text-xs">Registro #${key}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeColor}">
+                                            ${item.clase}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ` + filasHTML;
+                        }
+                    }
+                });
+            }
+
+            // Actualizar los contadores en la interfaz
+            document.getElementById('count-frescos').innerText = frescos;
+            document.getElementById('count-maduros').innerText = maduros;
+            document.getElementById('count-podridos').innerText = podridos;
+            
+            // Actualizar la tabla
+            document.getElementById('tabla-registros').innerHTML = filasHTML || '<tr><td colspan="2" class="px-6 py-4 text-center text-slate-400">Sin datos disponibles</td></tr>';
+
+            // Actualizar la gráfica con los nuevos totales
+            miGrafica.data.datasets[0].data = [frescos, maduros, podridos];
+            miGrafica.update();
+        });
+    </script>
+</body>
+</html>
