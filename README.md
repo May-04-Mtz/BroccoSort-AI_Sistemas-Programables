@@ -10,7 +10,7 @@ Implementar un sistema automatizado de clasificación de hortalizas que utiliza 
 * **Nissi Sarahi Prats Ramírez** (Clave: 23240003)
 * **Erik Fabian Gonsalez Jimenez** (Clave: 23240022)
 
-**Materia:** Sistemas Programables (8vo Semestre)  
+**Materia:** Sistemas Programables 
 **Institución:** Instituto Tecnológico de León (TecNM Campus León)
 
 ---
