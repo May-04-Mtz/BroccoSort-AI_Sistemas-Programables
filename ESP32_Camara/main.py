@@ -5,7 +5,7 @@
 # - Mayra Paola Martínez Aranda (22240233)
 # - Nissi Sarahi Prats Ramírez (23240003)
 # - Erik Fabian Gonsalez Jimenez (23240022)
-# DESCRIPCIÓN:Este módulo funciona como el "cerebro central" del sistema BroccoSort. 
+# OBJETIVO:Este módulo funciona como el "cerebro central" del sistema BroccoSort. 
 #Su función es realizar la captura de video en tiempo real, ejecutar el pipeline de 
 #inferencia para la clasificación de hortalizas y gestionar la persistencia de datos 
 #en la nube (Firebase), cerrando el ciclo con el envío de comandos de control al hardware a través del puerto serie.
