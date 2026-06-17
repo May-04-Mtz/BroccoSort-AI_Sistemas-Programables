@@ -11,6 +11,7 @@ Implementar un sistema automatizado de clasificación de hortalizas que utiliza 
 * **Erik Fabian Gonsalez Jimenez** (Clave: 23240022)
 
 **Materia:** Sistemas Programables 
+
 **Institución:** Instituto Tecnológico de León (TecNM Campus León)
 
 ---
