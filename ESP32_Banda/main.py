@@ -5,7 +5,7 @@
 # - Mayra Paola Martínez Aranda (22240233)
 # - Nissi Sarahi Prats Ramírez (23240003)
 # - Erik Fabian Gonsalez Jimenez (23240022)
-# DESCRIPCIÓN:Este script constituye el nodo de ejecución física del sistema BroccoSort. 
+# OBJETIVO:Este script constituye el nodo de ejecución física del sistema BroccoSort. 
 #Su función es supervisar de forma continua los sensores perimetrales (IR, ultrasónico, LDR) y 
 #traducir los comandos lógicos enviados por el servidor de visión artificial en acciones mecánicas 
 #precisas sobre la banda transportadora y los indicadores de estado.
