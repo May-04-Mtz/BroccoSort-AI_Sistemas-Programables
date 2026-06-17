@@ -5,7 +5,7 @@
 # - Mayra Paola Martínez Aranda (22240233)
 # - Nissi Sarahi Prats Ramírez (23240003)
 # - Erik Fabian Gonsalez Jimenez (23240022)
-# DESCRIPCIÓN:Actúa como la interfaz de comunicación de alto nivel para la gestión de eventos en tiempo real.
+# OBJETIVO:Actúa como la interfaz de comunicación de alto nivel para la gestión de eventos en tiempo real.
 #Este módulo centraliza tanto la telemetría (envío de estados de sensores hacia la nube) como el control de actuadores 
 #(recepción de comandos de la IA), asegurando que la ESP32 se mantenga siempre sincronizada con el estado global del sistema de clasificación.
 # ------------------------------------------------------------------
