@@ -6,7 +6,7 @@
 # - Mayra Paola Martínez Aranda (22240233)
 # - Nissi Sarahi Prats Ramírez (23240003)
 # - Erik Fabian Gonsalez Jimenez (23240022)
-# DESCRIPCIÓN: Servidor Backend que suscribe a los tópicos MQTT
+# OBJETIVO: Servidor Backend que suscribe a los tópicos MQTT
 #              y persiste el historial estructurado en Firebase (NoSQL).
 # ------------------------------------------------------------------
 """
