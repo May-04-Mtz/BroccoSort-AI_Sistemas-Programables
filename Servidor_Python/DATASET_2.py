@@ -6,7 +6,7 @@
 # - Mayra Paola Martínez Aranda (22240233)
 # - Nissi Sarahi Prats Ramírez (23240003)
 # - Erik Fabian Gonsalez Jimenez (23240022)
-# DESCRIPCIÓN: Integración de IA para captura remota de imágenes, 
+# OBJETIVO: Integración de IA para captura remota de imágenes, 
 #              inferencia con Roboflow y publicación de comandos MQTT.
 # ------------------------------------------------------------------
 """
